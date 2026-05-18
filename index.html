@@ -248,20 +248,84 @@ function updateReps(angles, ex){
   }
 }
 
+// ── Form rules (comprehensive — all exercises) ────────────────────────────────
+const FORM_RULES = {
+  'Push-up':[
+    {j:'left_hip',  cond:'below',thresh:150, msg:'Hips are sagging. Tighten your core and keep your body in a straight line.'},
+    {j:'left_hip',  cond:'above',thresh:195, msg:'Hips are too high. Lower them to form a straight plank.'},
+    {j:'left_elbow',cond:'above',thresh:110, msg:'Arms are not bending enough. Lower your chest closer to the floor.'},
+  ],
+  'Bicep Curl':[
+    {j:'left_shoulder', cond:'above',thresh:30, msg:'Shoulder is swinging. Keep your elbow fixed at your side.'},
+    {j:'right_shoulder',cond:'above',thresh:30, msg:'Shoulder is swinging. Keep your elbow fixed at your side.'},
+  ],
+  'Shoulder Press':[
+    {j:'left_hip', cond:'below',thresh:160, msg:'You are arching your lower back. Engage your core and stand tall.'},
+    {j:'right_hip',cond:'below',thresh:160, msg:'You are arching your lower back. Engage your core and stand tall.'},
+  ],
+  'Squat':[
+    {j:'left_hip', cond:'below',thresh:45, msg:'Back is rounding. Keep your chest up and your spine neutral.'},
+    {j:'right_hip',cond:'below',thresh:45, msg:'Back is rounding. Keep your chest up and your spine neutral.'},
+    {j:'left_knee',cond:'below',thresh:60, msg:'You are going too deep. Stop when thighs are parallel to the floor.'},
+  ],
+  'Lunge':[
+    {j:'left_knee',cond:'below',thresh:75,  msg:'Front knee is bending too far forward. Keep it above your ankle.'},
+    {j:'left_hip', cond:'below',thresh:140, msg:'Torso is leaning forward. Stand tall and keep your back straight.'},
+  ],
+  'Deadlift':[
+    {j:'left_hip', cond:'below',thresh:100, msg:'Back is rounded. Keep your back flat and hinge at the hips.'},
+    {j:'right_hip',cond:'below',thresh:100, msg:'Back is rounded. Keep your back flat and hinge at the hips.'},
+    {j:'left_knee',cond:'above',thresh:175, msg:'Knees are locking out. Keep a slight bend in your knees.'},
+  ],
+  'Plank':[
+    {j:'left_hip', cond:'below',thresh:155, msg:'Hips are dropping. Squeeze your glutes and lift them up.'},
+    {j:'left_hip', cond:'above',thresh:195, msg:'Hips are too high. Lower them to form a straight line.'},
+  ],
+  'Crunches':[
+    {j:'left_hip',cond:'above',thresh:135, msg:'You are sitting up too far. Curl only your shoulders off the floor.'},
+  ],
+  'Sit-ups':[
+    {j:'left_hip',cond:'above',thresh:120, msg:'Momentum is taking over. Slow down and use your core muscles.'},
+  ],
+  'Leg Raises':[
+    {j:'left_hip',cond:'below',thresh:155, msg:'Lower back is arching. Press it firmly into the floor.'},
+  ],
+  'Mountain Climbers':[
+    {j:'left_hip',cond:'above',thresh:190, msg:'Hips are raised too high. Keep your body in a straight plank position.'},
+  ],
+  'High Knees':[
+    {j:'left_hip',cond:'below',thresh:100, msg:'Knees are not high enough. Drive them up to hip level.'},
+  ],
+  'Jumping Jacks':[
+    {j:'left_knee',cond:'below',thresh:155, msg:'Knees are bending too much on landing. Stay light on your feet.'},
+  ],
+  'Downward Dog':[
+    {j:'left_knee',cond:'below',thresh:155, msg:'Knees are bent. Try to straighten your legs and press heels to the floor.'},
+    {j:'left_hip', cond:'below',thresh:85,  msg:'Hips are too low. Push them up and back to form an inverted V shape.'},
+  ],
+  'Warrior II':[
+    {j:'left_knee',cond:'above',thresh:110, msg:'Front knee is not bent enough. Bend it to 90 degrees over your ankle.'},
+    {j:'left_hip', cond:'below',thresh:160, msg:'Torso is leaning. Keep your hips square and your torso upright.'},
+  ],
+};
+
+let lastSpokenTime = 0;
+const TTS_COOLDOWN_MS = 4000; // speak again if same issue persists after 4s
+
 // ── Form feedback ────────────────────────────────────────────────
 function checkForm(ex, angles){
   isFormBad = false;
-  const rules = {
-    'Push-up':[{j:'left_hip',max:200,msg:'Keep body straight'}],
-    'Squat':[{j:'left_hip',min:50,msg:'Straighten your back'}],
-    'Deadlift':[{j:'left_knee',max:175,msg:'Keep slight knee bend'}],
-  };
-  const r=rules[ex];
-  if(!r){setGoodForm();return;}
-  for(const rule of r){
-    const v=angles[rule.j]||180;
-    if(rule.min && v<rule.min-10){ isFormBad = true; setBadForm(rule.msg);return; }
-    if(rule.max && v>rule.max+10){ isFormBad = true; setBadForm(rule.msg);return; }
+  const rules = FORM_RULES[ex];
+  if(!rules){ setGoodForm(); return; }
+
+  for(const rule of rules){
+    const v = angles[rule.j] || 180;
+    const triggered = rule.cond==='below' ? v < rule.thresh : v > rule.thresh;
+    if(triggered){
+      isFormBad = true;
+      setBadForm(rule.msg);
+      return;
+    }
   }
   setGoodForm();
 }
@@ -271,18 +335,25 @@ function setGoodForm(){
   formBadge.className='';
   corrEl.style.display='none';
 }
+
 function setBadForm(msg){
   formBadge.textContent='● FIX FORM';
   formBadge.className='bad';
-  if(msg!==lastFeedback){
-    lastFeedback=msg;
-    corrEl.textContent=msg;
-    corrEl.style.display='block';
-    clearTimeout(feedbackTimeout);
-    feedbackTimeout=setTimeout(()=>corrEl.style.display='none',2500);
+  corrEl.textContent=msg;
+  corrEl.style.display='block';
+  clearTimeout(feedbackTimeout);
+  feedbackTimeout=setTimeout(()=>corrEl.style.display='none',3000);
+
+  // Speak every 4 seconds while form is still wrong (time-based, not just on change)
+  const now = Date.now();
+  if(now - lastSpokenTime >= TTS_COOLDOWN_MS){
+    lastSpokenTime = now;
     if(window.speechSynthesis){
-      const u=new SpeechSynthesisUtterance(msg);
-      u.rate=1.1;
+      speechSynthesis.cancel(); // stop any ongoing speech
+      const u = new SpeechSynthesisUtterance(msg);
+      u.rate = 0.95;
+      u.pitch = 1.05;
+      u.volume = 1.0;
       speechSynthesis.speak(u);
     }
   }
