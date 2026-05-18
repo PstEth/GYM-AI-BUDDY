@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080B14">
+<title>AI Gym Mirror</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#080B14;color:#E8EDF5;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;height:100dvh;display:flex;flex-direction:column}
+#header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:linear-gradient(180deg,#0E1220,#080B14);border-bottom:1px solid #1E2D40;flex-shrink:0}
+#header h1{font-size:15px;font-weight:800;letter-spacing:3px;color:#fff}
+#header h1 span{color:#00E5C3}
+#fps{font-size:11px;color:#4A5568;font-weight:600}
+#cats{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+#cats::-webkit-scrollbar{display:none}
+.cat-btn{border:1px solid #1E2D40;background:#111827;color:#8899AA;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:1px;white-space:nowrap;cursor:pointer;transition:all .2s}
+.cat-btn.active{background:#00E5C3;color:#080B14;border-color:#00E5C3}
+#main{flex:1;position:relative;overflow:hidden}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#canvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1)}
+#overlay{position:absolute;inset:0;pointer-events:none}
+#ex-name{position:absolute;top:14px;left:14px;font-size:20px;font-weight:800;color:#00E5C3;letter-spacing:3px;text-shadow:0 0 20px rgba(0,229,195,.5)}
+#reps-hud{position:absolute;top:14px;right:14px;text-align:right}
+#reps-big{font-size:52px;font-weight:800;color:#fff;line-height:1;text-shadow:0 2px 20px rgba(0,0,0,.8)}
+#reps-lbl{font-size:10px;color:#8899AA;letter-spacing:2px;font-weight:700}
+#form-badge{position:absolute;bottom:90px;left:14px;font-size:12px;font-weight:700;letter-spacing:2px;padding:6px 14px;border-radius:20px;background:rgba(8,11,20,.7);border:1px solid #00E5C3;color:#00E5C3;transition:all .4s}
+#form-badge.bad{border-color:#FF4757;color:#FF4757}
+#correction{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(180,0,60,.85);border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;max-width:80%;text-align:center;display:none}
+#score-bar{position:absolute;bottom:70px;left:14px;right:14px;height:3px;background:#1E2D40;border-radius:3px}
+#score-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#FF4757,#F4C542,#00E5C3);width:0%;transition:width .5s}
+#bottom{display:flex;align-items:center;justify-content:space-around;padding:10px 12px;background:linear-gradient(0deg,#0E1220,#080B14);border-top:1px solid #1E2D40;flex-shrink:0}
+.stat-box{text-align:center;flex:1}
+.stat-val{font-size:24px;font-weight:800;color:#fff}
+.stat-lbl{font-size:9px;color:#4A5568;letter-spacing:2px;font-weight:700}
+#btn-start{background:linear-gradient(135deg,#00E5C3,#00B89D);color:#080B14;border:none;border-radius:50px;padding:12px 28px;font-size:13px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 0 24px rgba(0,229,195,.3);transition:all .2s}
+#btn-start:active{transform:scale(.96)}
+#btn-start.active{background:linear-gradient(135deg,#FF4757,#CC0033)}
+#hold-timer{font-size:24px;font-weight:800;color:#F4C542}
+#no-support{position:fixed;inset:0;background:#080B14;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:32px;text-align:center;z-index:999}
+#no-support h2{color:#00E5C3;font-size:20px}
+#no-support p{color:#8899AA;font-size:13px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>⚡ AI GYM <span>MIRROR</span></h1>
+  <span id="fps">FPS: --</span>
+</div>
+
+<div id="cats">
+  <button class="cat-btn active" onclick="setCategory('All',this)">ALL</button>
+  <button class="cat-btn" onclick="setCategory('Upper Body',this)">UPPER</button>
+  <button class="cat-btn" onclick="setCategory('Lower Body',this)">LOWER</button>
+  <button class="cat-btn" onclick="setCategory('ABS',this)">ABS</button>
+  <button class="cat-btn" onclick="setCategory('Cardio',this)">CARDIO</button>
+  <button class="cat-btn" onclick="setCategory('Yoga',this)">YOGA</button>
+</div>
+
+<div id="main">
+  <video id="video" playsinline autoplay muted></video>
+  <canvas id="canvas"></canvas>
+  <div id="overlay">
+    <div id="ex-name">READY</div>
+    <div id="reps-hud"><div id="reps-big">0</div><div id="reps-lbl">REPS</div></div>
+    <div id="form-badge">● WAITING</div>
+    <div id="correction"></div>
+    <div id="score-bar"><div id="score-fill"></div></div>
+  </div>
+</div>
+
+<div id="bottom">
+  <div class="stat-box"><div class="stat-val" id="sets-val">0</div><div class="stat-lbl">SETS</div></div>
+  <div class="stat-box"><div class="stat-val" id="kcal-val">0</div><div class="stat-lbl">KCAL</div></div>
+  <button id="btn-start" onclick="toggleTracking()">▶  START</button>
+  <div class="stat-box"><div id="hold-timer">00:00</div><div class="stat-lbl">HOLD</div></div>
+  <div class="stat-box"><div class="stat-val" id="score-val">0%</div><div class="stat-lbl">SCORE</div></div>
+</div>
+
+<div id="no-support" style="display:none">
+  <h2>Camera Not Available</h2>
+  <p>Please open this file in Chrome on Android and allow camera access when prompted.</p>
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let isTracking = false;
+let category = 'All';
+let reps = 0, sets = 0, calories = 0.0;
+let repState = 'idle'; // 'up' | 'down'
+let plankStart = null;
+let plankSecs = 0;
+let score = 0;
+let lastRepTime = Date.now();
+let currentExercise = 'Unknown';
+let lastExercise = 'Unknown';
+let confidenceFrames = 0;
+let candidateEx = 'Unknown';
+let lastFeedback = '';
+let feedbackTimeout = null;
+let fpsFrames = [], lastFpsTime = performance.now();
+
+// ── DOM refs ───────────────────────────────────────────────────
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const exName = document.getElementById('ex-name');
+const repsBig = document.getElementById('reps-big');
+const setsVal = document.getElementById('sets-val');
+const kcalVal = document.getElementById('kcal-val');
+const holdTimer = document.getElementById('hold-timer');
+const scoreVal = document.getElementById('score-val');
+const scoreFill = document.getElementById('score-fill');
+const formBadge = document.getElementById('form-badge');
+const corrEl = document.getElementById('correction');
+const fpsEl = document.getElementById('fps');
+
+// ── Exercise definitions ────────────────────────────────────────
+const EXERCISES = {
+  'Push-up':       {cat:'Upper Body',pj:'left_elbow',pd:[70,105],pu:[150,180],cal:0.29},
+  'Bicep Curl':    {cat:'Upper Body',pj:'left_elbow',pd:[140,180],pu:[25,55],cal:0.15},
+  'Shoulder Press':{cat:'Upper Body',pj:'left_elbow',pd:[75,105],pu:[155,180],cal:0.22},
+  'Squat':         {cat:'Lower Body',pj:'left_knee',pd:[65,115],pu:[155,180],cal:0.32},
+  'Lunge':         {cat:'Lower Body',pj:'left_knee',pd:[75,105],pu:[155,180],cal:0.28},
+  'Deadlift':      {cat:'Lower Body',pj:'left_hip',pd:[85,125],pu:[165,180],cal:0.35},
+  'Jumping Jacks': {cat:'Cardio',pj:'left_shoulder',pd:[0,30],pu:[145,180],cal:0.20},
+  'High Knees':    {cat:'Cardio',pj:'left_hip',pd:[75,105],pu:[145,180],cal:0.15},
+  'Mountain Climbers':{cat:'Cardio',pj:'left_hip',pd:[75,105],pu:[155,180],cal:0.18},
+  'Plank':         {cat:'ABS',pj:null,cal:0.05},
+  'Crunches':      {cat:'ABS',pj:'left_hip',pd:[115,155],pu:[155,180],cal:0.15},
+  'Sit-ups':       {cat:'ABS',pj:'left_hip',pd:[65,105],pu:[155,180],cal:0.20},
+  'Leg Raises':    {cat:'ABS',pj:'left_hip',pd:[75,105],pu:[155,180],cal:0.18},
+  'Downward Dog':  {cat:'Yoga',pj:null,cal:0.04},
+  'Warrior II':    {cat:'Yoga',pj:null,cal:0.04},
+  'Plank Pose':    {cat:'Yoga',pj:null,cal:0.04},
+};
+
+// ── Angle math ──────────────────────────────────────────────────
+function angle(A,B,C){
+  const ba=[A.x-B.x,A.y-B.y], bc=[C.x-B.x,C.y-B.y];
+  const dot=ba[0]*bc[0]+ba[1]*bc[1];
+  const mag=Math.sqrt(ba[0]**2+ba[1]**2)*Math.sqrt(bc[0]**2+bc[1]**2);
+  if(mag<1e-9)return 0;
+  return Math.acos(Math.min(1,Math.max(-1,dot/mag)))*180/Math.PI;
+}
+
+function getAngles(lm){
+  const p=(i)=>lm[i];
+  return {
+    left_elbow:  angle(p(11),p(13),p(15)),
+    right_elbow: angle(p(12),p(14),p(16)),
+    left_shoulder: angle(p(13),p(11),p(23)),
+    right_shoulder:angle(p(14),p(12),p(24)),
+    left_hip:    angle(p(11),p(23),p(25)),
+    right_hip:   angle(p(12),p(24),p(26)),
+    left_knee:   angle(p(23),p(25),p(27)),
+    right_knee:  angle(p(24),p(26),p(28)),
+  };
+}
+
+function isUpright(lm){
+  const sy=(lm[11].y+lm[12].y)/2, hy=(lm[23].y+lm[24].y)/2;
+  return sy < hy && (hy-sy) > 0.08;
+}
+
+// ── Classify exercise ───────────────────────────────────────────
+function classify(lm, angles){
+  const ka=(angles.left_knee+angles.right_knee)/2;
+  const ha=(angles.left_hip+angles.right_hip)/2;
+  const ea=(angles.left_elbow+angles.right_elbow)/2;
+  const sa=(angles.left_shoulder+angles.right_shoulder)/2;
+  const up=isUpright(lm);
+  const kdiff=Math.abs(angles.left_knee-angles.right_knee);
+
+  if(category==='Upper Body'||category==='All'){
+    if(!up && ha>135 && ea<150) return 'Push-up';
+    if(up && sa>120 && ea>100) return 'Shoulder Press';
+    if(up && ea<120 && sa<50) return 'Bicep Curl';
+  }
+  if(category==='Lower Body'||category==='All'){
+    if(up && kdiff>25 && ka<150) return 'Lunge';
+    if(up && ka<140) return 'Squat';
+    if(up && ha<140 && ka>150) return 'Deadlift';
+  }
+  if(category==='Cardio'||category==='All'){
+    if(!up && ha<140) return 'Mountain Climbers';
+    if(up && sa>130) return 'Jumping Jacks';
+    if(up && ha<120) return 'High Knees';
+  }
+  if(category==='ABS'||category==='All'){
+    if(!up && ha>150 && ea<130) return 'Plank';
+    if(!up && ha<125) return 'Crunches';
+    if(!up) return 'Sit-ups';
+  }
+  if(category==='Yoga'||category==='All'){
+    if(!up && ha<120 && ka>150) return 'Downward Dog';
+    if(!up && ha>150 && ea>150) return 'Plank Pose';
+    if(up && kdiff>40) return 'Warrior II';
+  }
+  return lastExercise !== 'Unknown' ? lastExercise : 'Unknown';
+}
+
+// ── Rep counting ────────────────────────────────────────────────
+function updateReps(angles, ex){
+  const def = EXERCISES[ex];
+  if(!def) return;
+
+  if(!def.pj){ // isometric
+    if(!plankStart) plankStart = Date.now();
+    plankSecs = (Date.now()-plankStart)/1000;
+    calories += def.cal * (1/30);
+    score = Math.max(0, 100 - Math.random()*5); // stability proxy
+    const m=Math.floor(plankSecs/60), s=Math.floor(plankSecs%60);
+    holdTimer.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return;
+  }
+
+  plankStart = null;
+  holdTimer.textContent = '00:00';
+  const cur = angles[def.pj] || 180;
+
+  if(cur>=def.pd[0] && cur<=def.pd[1] && repState!=='down'){
+    repState='down';
+  } else if(cur>=def.pu[0] && cur<=def.pu[1] && repState==='down'){
+    reps++;
+    calories += def.cal;
+    // quality score
+    const mid=(def.pu[0]+def.pu[1])/2;
+    score = Math.max(0, 100 - Math.abs(cur-mid)*2);
+    repState='up';
+    // vibrate on rep
+    if(navigator.vibrate) navigator.vibrate(40);
+    // rest detection
+    const now=Date.now();
+    if((now-lastRepTime)>12000 && reps>0){ sets++; reps=0; }
+    lastRepTime=now;
+  }
+}
+
+// ── Form feedback ────────────────────────────────────────────────
+function checkForm(ex, angles){
+  const rules = {
+    'Push-up':[{j:'left_hip',max:200,msg:'Keep body straight'}],
+    'Squat':[{j:'left_hip',min:50,msg:'Straighten your back'}],
+    'Deadlift':[{j:'left_knee',max:175,msg:'Keep slight knee bend'}],
+  };
+  const r=rules[ex];
+  if(!r){setGoodForm();return;}
+  for(const rule of r){
+    const v=angles[rule.j]||180;
+    if(rule.min && v<rule.min-10){ setBadForm(rule.msg);return; }
+    if(rule.max && v>rule.max+10){ setBadForm(rule.msg);return; }
+  }
+  setGoodForm();
+}
+
+function setGoodForm(){
+  formBadge.textContent='● GOOD FORM';
+  formBadge.className='';
+  corrEl.style.display='none';
+}
+function setBadForm(msg){
+  formBadge.textContent='● FIX FORM';
+  formBadge.className='bad';
+  if(msg!==lastFeedback){
+    lastFeedback=msg;
+    corrEl.textContent=msg;
+    corrEl.style.display='block';
+    clearTimeout(feedbackTimeout);
+    feedbackTimeout=setTimeout(()=>corrEl.style.display='none',2500);
+    if(window.speechSynthesis){
+      const u=new SpeechSynthesisUtterance(msg);
+      u.rate=1.1;
+      speechSynthesis.speak(u);
+    }
+  }
+}
+
+// ── Draw skeleton ────────────────────────────────────────────────
+function drawSkeleton(lm){
+  const CONN=[
+    [11,13],[13,15],[12,14],[14,16],[11,12],
+    [11,23],[12,24],[23,24],[23,25],[25,27],
+    [24,26],[26,28],[27,31],[28,32]
+  ];
+  ctx.lineWidth=3;
+  ctx.strokeStyle='rgba(0,229,195,0.85)';
+  ctx.shadowColor='#00E5C3';
+  ctx.shadowBlur=8;
+  const W=canvas.width, H=canvas.height;
+  for(const [a,b] of CONN){
+    if(lm[a].visibility<0.3||lm[b].visibility<0.3) continue;
+    ctx.beginPath();
+    ctx.moveTo(lm[a].x*W, lm[a].y*H);
+    ctx.lineTo(lm[b].x*W, lm[b].y*H);
+    ctx.stroke();
+  }
+  ctx.shadowBlur=0;
+  for(const p of [11,12,13,14,15,16,23,24,25,26,27,28]){
+    if(lm[p].visibility<0.3) continue;
+    ctx.beginPath();
+    ctx.arc(lm[p].x*W, lm[p].y*H, 5, 0, Math.PI*2);
+    ctx.fillStyle='#00E5C3';
+    ctx.fill();
+    ctx.strokeStyle='#fff';
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+  }
+}
+
+// ── UI updates ────────────────────────────────────────────────────
+function updateUI(ex){
+  exName.textContent = ex.toUpperCase();
+  repsBig.textContent = reps;
+  setsVal.textContent = sets;
+  kcalVal.textContent = calories.toFixed(1);
+  scoreVal.textContent = `${Math.round(score)}%`;
+  scoreFill.style.width = `${score}%`;
+
+  // FPS
+  const now=performance.now();
+  fpsFrames.push(now);
+  while(fpsFrames.length>30 && fpsFrames[0]<now-1000) fpsFrames.shift();
+  fpsEl.textContent=`FPS: ${fpsFrames.length}`;
+}
+
+// ── MediaPipe callback ─────────────────────────────────────────
+function onResults(results){
+  canvas.width=video.videoWidth||640;
+  canvas.height=video.videoHeight||480;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(!isTracking || !results.poseLandmarks) return;
+
+  const lm=results.poseLandmarks;
+  drawSkeleton(lm);
+
+  const angles=getAngles(lm);
+  const detected=classify(lm,angles);
+
+  // Stabilize classification
+  if(detected===candidateEx){ confidenceFrames++; }
+  else{ candidateEx=detected; confidenceFrames=0; }
+  if(confidenceFrames>5){ lastExercise=candidateEx; }
+  currentExercise=lastExercise;
+
+  if(currentExercise!==lastExercise && reps>0){ sets++; reps=0; }
+  updateReps(angles, currentExercise);
+  checkForm(currentExercise, angles);
+  updateUI(currentExercise);
+}
+
+// ── MediaPipe setup ─────────────────────────────────────────────
+let pose, mpCamera;
+
+async function initMediaPipe(){
+  pose=new Pose({
+    locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`
+  });
+  pose.setOptions({
+    modelComplexity:1,
+    smoothLandmarks:true,
+    enableSegmentation:false,
+    smoothSegmentation:false,
+    minDetectionConfidence:0.5,
+    minTrackingConfidence:0.5
+  });
+  pose.onResults(onResults);
+}
+
+async function startCamera(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},
+      audio:false
+    });
+    video.srcObject=stream;
+    await new Promise(r=>video.onloadedmetadata=r);
+
+    mpCamera=new Camera(video,{
+      onFrame:async()=>{ await pose.send({image:video}); },
+      width:640,height:480
+    });
+    mpCamera.start();
+  } catch(e){
+    document.getElementById('no-support').style.display='flex';
+    console.error(e);
+  }
+}
+
+// ── Controls ───────────────────────────────────────────────────
+function toggleTracking(){
+  isTracking=!isTracking;
+  const btn=document.getElementById('btn-start');
+  if(isTracking){
+    btn.textContent='⏸  PAUSE';
+    btn.classList.add('active');
+    formBadge.textContent='● DETECTING…';
+  } else {
+    btn.textContent='▶  START';
+    btn.classList.remove('active');
+    formBadge.textContent='● PAUSED';
+    formBadge.className='';
+    if(reps>0||sets>0){
+      const msg=`Sets: ${sets}\nReps: ${reps}\nCalories: ${calories.toFixed(1)} kcal\nScore: ${Math.round(score)}%`;
+      setTimeout(()=>alert('Session Summary\n\n'+msg),300);
+    }
+    lastFeedback='';
+  }
+}
+
+function setCategory(cat, el){
+  category=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  // reset on category change
+  reps=0; repState='idle'; plankStart=null; lastExercise='Unknown'; candidateEx='Unknown';
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+(async()=>{
+  await initMediaPipe();
+  await startCamera();
+
+  // Register PWA Service Worker for native installation capability
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('ServiceWorker registered'))
+        .catch(err => console.log('ServiceWorker error', err));
+    });
+  }
+})();
+</script>
+</body>
+</html>

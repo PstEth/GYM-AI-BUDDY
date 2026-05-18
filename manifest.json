@@ -1,0 +1,17 @@
+{
+  "name": "AI Gym Mirror",
+  "short_name": "Gym Mirror",
+  "start_url": "./AI_Gym_Mirror_Mobile.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080B14",
+  "theme_color": "#080B14",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
