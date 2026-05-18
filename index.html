@@ -95,6 +95,7 @@ body{background:#080B14;color:#E8EDF5;font-family:'Segoe UI',Arial,sans-serif;ov
 <script>
 // ── State ──────────────────────────────────────────────────────
 let isTracking = false;
+let isFormBad = false;
 let category = 'All';
 let reps = 0, sets = 0, calories = 0.0;
 let repState = 'idle'; // 'up' | 'down'
@@ -249,6 +250,7 @@ function updateReps(angles, ex){
 
 // ── Form feedback ────────────────────────────────────────────────
 function checkForm(ex, angles){
+  isFormBad = false;
   const rules = {
     'Push-up':[{j:'left_hip',max:200,msg:'Keep body straight'}],
     'Squat':[{j:'left_hip',min:50,msg:'Straighten your back'}],
@@ -258,8 +260,8 @@ function checkForm(ex, angles){
   if(!r){setGoodForm();return;}
   for(const rule of r){
     const v=angles[rule.j]||180;
-    if(rule.min && v<rule.min-10){ setBadForm(rule.msg);return; }
-    if(rule.max && v>rule.max+10){ setBadForm(rule.msg);return; }
+    if(rule.min && v<rule.min-10){ isFormBad = true; setBadForm(rule.msg);return; }
+    if(rule.max && v>rule.max+10){ isFormBad = true; setBadForm(rule.msg);return; }
   }
   setGoodForm();
 }
@@ -293,9 +295,11 @@ function drawSkeleton(lm){
     [11,23],[12,24],[23,24],[23,25],[25,27],
     [24,26],[26,28],[27,31],[28,32]
   ];
+  const color = isFormBad ? 'rgba(255,71,87,0.85)' : 'rgba(0,229,195,0.85)';
+  const glow = isFormBad ? '#FF4757' : '#00E5C3';
   ctx.lineWidth=3;
-  ctx.strokeStyle='rgba(0,229,195,0.85)';
-  ctx.shadowColor='#00E5C3';
+  ctx.strokeStyle=color;
+  ctx.shadowColor=glow;
   ctx.shadowBlur=8;
   const W=canvas.width, H=canvas.height;
   for(const [a,b] of CONN){
@@ -310,7 +314,7 @@ function drawSkeleton(lm){
     if(lm[p].visibility<0.3) continue;
     ctx.beginPath();
     ctx.arc(lm[p].x*W, lm[p].y*H, 5, 0, Math.PI*2);
-    ctx.fillStyle='#00E5C3';
+    ctx.fillStyle=glow;
     ctx.fill();
     ctx.strokeStyle='#fff';
     ctx.lineWidth=1.5;
