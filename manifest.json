@@ -1,6 +1,6 @@
 {
-  "name": "AI Gym Mirror",
-  "short_name": "Gym Mirror",
+  "name": "AI Gym Screen",
+  "short_name": "Gym Screen",
   "start_url": "./AI_Gym_Mirror_Mobile.html",
   "display": "standalone",
   "orientation": "portrait",
