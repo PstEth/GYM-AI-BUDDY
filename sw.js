@@ -1,6 +1,6 @@
-const CACHE_NAME = 'gym-mirror-v1';
+const CACHE_NAME = 'gym-mirror-v2';
 const ASSETS = [
-  './AI_Gym_Mirror_Mobile.html',
+  './index.html',
   './manifest.json',
   './icon.png'
 ];

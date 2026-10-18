@@ -5,51 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#080B14">
-<title>AI Gym Screen</title>
+<meta name="theme-color" content="#000000">
+<title>AI Gym Mirror</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:#080B14;color:#E8EDF5;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;height:100dvh;display:flex;flex-direction:column}
-#header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:linear-gradient(180deg,#0E1220,#080B14);border-bottom:1px solid #1E2D40;flex-shrink:0}
-#header h1{font-size:15px;font-weight:800;letter-spacing:3px;color:#fff}
-#header h1 span{color:#00E5C3}
-#fps{font-size:11px;color:#4A5568;font-weight:600}
-#cats{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+body{background:#000;color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;height:100dvh;display:flex;flex-direction:column}
+#header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px;background:#000;flex-shrink:0}
+#header h1{font-size:11px;font-weight:600;letter-spacing:4px;color:#fff}
+#header h1 span{color:#5c5c5c;font-weight:500}
+#fps{font-size:10px;color:#5c5c5c;font-weight:500;letter-spacing:1px}
+#cats{display:flex;gap:4px;padding:4px 12px 12px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
 #cats::-webkit-scrollbar{display:none}
-.cat-btn{border:1px solid #1E2D40;background:#111827;color:#8899AA;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;letter-spacing:1px;white-space:nowrap;cursor:pointer;transition:all .2s}
-.cat-btn.active{background:#00E5C3;color:#080B14;border-color:#00E5C3}
-#main{flex:1;position:relative;overflow:hidden}
+.cat-btn{border:none;background:transparent;color:#5c5c5c;border-radius:0;padding:6px 10px;font-size:10px;font-weight:600;letter-spacing:1.5px;white-space:nowrap;cursor:pointer}
+.cat-btn.active{background:transparent;color:#fff;border-bottom:1px solid #fff}
+#main{flex:1;position:relative;overflow:hidden;background:#000}
 #video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 #canvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1)}
 #overlay{position:absolute;inset:0;pointer-events:none}
-#ex-name{position:absolute;top:14px;left:14px;font-size:20px;font-weight:800;color:#00E5C3;letter-spacing:3px;text-shadow:0 0 20px rgba(0,229,195,.5)}
-#reps-hud{position:absolute;top:14px;right:14px;text-align:right}
-#reps-big{font-size:52px;font-weight:800;color:#fff;line-height:1;text-shadow:0 2px 20px rgba(0,0,0,.8)}
-#reps-lbl{font-size:10px;color:#8899AA;letter-spacing:2px;font-weight:700}
-#form-badge{position:absolute;bottom:90px;left:14px;font-size:12px;font-weight:700;letter-spacing:2px;padding:6px 14px;border-radius:20px;background:rgba(8,11,20,.7);border:1px solid #00E5C3;color:#00E5C3;transition:all .4s}
-#form-badge.bad{border-color:#FF4757;color:#FF4757}
-#correction{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(180,0,60,.85);border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;max-width:80%;text-align:center;display:none}
-#score-bar{position:absolute;bottom:70px;left:14px;right:14px;height:3px;background:#1E2D40;border-radius:3px}
-#score-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#FF4757,#F4C542,#00E5C3);width:0%;transition:width .5s}
-#bottom{display:flex;align-items:center;justify-content:space-around;padding:10px 12px;background:linear-gradient(0deg,#0E1220,#080B14);border-top:1px solid #1E2D40;flex-shrink:0}
+#ex-name{position:absolute;top:16px;left:16px;font-size:13px;font-weight:600;color:#fff;letter-spacing:4px}
+#reps-hud{position:absolute;top:12px;right:16px;text-align:right}
+#reps-big{font-size:44px;font-weight:500;color:#fff;line-height:1}
+#reps-lbl{font-size:9px;color:#8a8a8a;letter-spacing:2px;font-weight:500}
+#form-badge{position:absolute;bottom:90px;left:16px;font-size:10px;font-weight:500;letter-spacing:2px;padding:6px 0;border:none;background:transparent;color:#fff}
+#form-badge.bad{color:#E10600}
+#correction{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(225,6,0,.88);border-radius:0;padding:8px 14px;font-size:12px;font-weight:500;max-width:80%;text-align:center;display:none;color:#fff}
+#score-bar{position:absolute;bottom:72px;left:16px;right:16px;height:1px;background:#1a1a1a}
+#score-fill{height:100%;background:#fff;width:0%;transition:width .5s}
+#bottom{display:flex;align-items:center;justify-content:space-around;padding:14px 12px 22px;background:#000;border-top:1px solid #1a1a1a;flex-shrink:0}
 .stat-box{text-align:center;flex:1}
-.stat-val{font-size:24px;font-weight:800;color:#fff}
-.stat-lbl{font-size:9px;color:#4A5568;letter-spacing:2px;font-weight:700}
-#btn-start{background:linear-gradient(135deg,#00E5C3,#00B89D);color:#080B14;border:none;border-radius:50px;padding:12px 28px;font-size:13px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 0 24px rgba(0,229,195,.3);transition:all .2s}
-#btn-start:active{transform:scale(.96)}
-#btn-start.active{background:linear-gradient(135deg,#FF4757,#CC0033)}
-#hold-timer{font-size:24px;font-weight:800;color:#F4C542}
-#no-support{position:fixed;inset:0;background:#080B14;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:32px;text-align:center;z-index:999}
-#no-support h2{color:#00E5C3;font-size:20px}
-#no-support p{color:#8899AA;font-size:13px;line-height:1.6}
+.stat-val{font-size:20px;font-weight:500;color:#fff}
+.stat-lbl{font-size:9px;color:#5c5c5c;letter-spacing:2px;font-weight:500}
+#btn-start{background:#fff;color:#000;border:none;border-radius:0;padding:12px 28px;font-size:11px;font-weight:600;letter-spacing:2px;cursor:pointer}
+#btn-start:active{opacity:.7}
+#btn-start.active{background:#111;color:#fff;border:1px solid #2e2e2e}
+#hold-timer{font-size:20px;font-weight:500;color:#fff}
+#no-support{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:32px;text-align:center;z-index:999}
+#no-support h2{color:#fff;font-size:16px;letter-spacing:3px;font-weight:600}
+#no-support p{color:#8a8a8a;font-size:13px;line-height:1.6}
 </style>
 </head>
 <body>
 
 <div id="header">
-  <h1>⚡ AI GYM <span>SCREEN</span></h1>
+  <h1>AI GYM <span>MIRROR</span></h1>
   <span id="fps">FPS: --</span>
 </div>
 
@@ -68,7 +68,7 @@ body{background:#080B14;color:#E8EDF5;font-family:'Segoe UI',Arial,sans-serif;ov
   <div id="overlay">
     <div id="ex-name">READY</div>
     <div id="reps-hud"><div id="reps-big">0</div><div id="reps-lbl">REPS</div></div>
-    <div id="form-badge">● WAITING</div>
+    <div id="form-badge">WAITING</div>
     <div id="correction"></div>
     <div id="score-bar"><div id="score-fill"></div></div>
   </div>
@@ -77,7 +77,7 @@ body{background:#080B14;color:#E8EDF5;font-family:'Segoe UI',Arial,sans-serif;ov
 <div id="bottom">
   <div class="stat-box"><div class="stat-val" id="sets-val">0</div><div class="stat-lbl">SETS</div></div>
   <div class="stat-box"><div class="stat-val" id="kcal-val">0</div><div class="stat-lbl">KCAL</div></div>
-  <button id="btn-start" onclick="toggleTracking()">▶  START</button>
+  <button id="btn-start" onclick="toggleTracking()">START</button>
   <div class="stat-box"><div id="hold-timer">00:00</div><div class="stat-lbl">HOLD</div></div>
   <div class="stat-box"><div class="stat-val" id="score-val">0%</div><div class="stat-lbl">SCORE</div></div>
 </div>
@@ -331,13 +331,13 @@ function checkForm(ex, angles){
 }
 
 function setGoodForm(){
-  formBadge.textContent='● GOOD FORM';
+  formBadge.textContent='GOOD FORM';
   formBadge.className='';
   corrEl.style.display='none';
 }
 
 function setBadForm(msg){
-  formBadge.textContent='● FIX FORM';
+  formBadge.textContent='FIX FORM';
   formBadge.className='bad';
   corrEl.textContent=msg;
   corrEl.style.display='block';
@@ -366,12 +366,12 @@ function drawSkeleton(lm){
     [11,23],[12,24],[23,24],[23,25],[25,27],
     [24,26],[26,28],[27,31],[28,32]
   ];
-  const color = isFormBad ? 'rgba(255,71,87,0.85)' : 'rgba(0,229,195,0.85)';
-  const glow = isFormBad ? '#FF4757' : '#00E5C3';
-  ctx.lineWidth=3;
+  const color = isFormBad ? 'rgba(225,6,0,0.95)' : 'rgba(180,180,180,0.85)';
+  const glow = isFormBad ? '#E10600' : '#b4b4b4';
+  ctx.lineWidth = isFormBad ? 4 : 2;
   ctx.strokeStyle=color;
-  ctx.shadowColor=glow;
-  ctx.shadowBlur=8;
+  ctx.shadowColor= isFormBad ? 'rgba(225,6,0,0.55)' : 'transparent';
+  ctx.shadowBlur= isFormBad ? 12 : 0;
   const W=canvas.width, H=canvas.height;
   for(const [a,b] of CONN){
     if(lm[a].visibility<0.3||lm[b].visibility<0.3) continue;
@@ -418,7 +418,6 @@ function onResults(results){
   if(!isTracking || !results.poseLandmarks) return;
 
   const lm=results.poseLandmarks;
-  drawSkeleton(lm);
 
   const angles=getAngles(lm);
   const detected=classify(lm,angles);
@@ -432,6 +431,7 @@ function onResults(results){
   if(currentExercise!==lastExercise && reps>0){ sets++; reps=0; }
   updateReps(angles, currentExercise);
   checkForm(currentExercise, angles);
+  drawSkeleton(lm);
   updateUI(currentExercise);
 }
 
@@ -478,13 +478,13 @@ function toggleTracking(){
   isTracking=!isTracking;
   const btn=document.getElementById('btn-start');
   if(isTracking){
-    btn.textContent='⏸  PAUSE';
+    btn.textContent='PAUSE';
     btn.classList.add('active');
-    formBadge.textContent='● DETECTING…';
+    formBadge.textContent='DETECTING';
   } else {
-    btn.textContent='▶  START';
+    btn.textContent='START';
     btn.classList.remove('active');
-    formBadge.textContent='● PAUSED';
+    formBadge.textContent='PAUSED';
     formBadge.className='';
     if(reps>0||sets>0){
       const msg=`Sets: ${sets}\nReps: ${reps}\nCalories: ${calories.toFixed(1)} kcal\nScore: ${Math.round(score)}%`;

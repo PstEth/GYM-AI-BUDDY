@@ -1,11 +1,11 @@
 {
-  "name": "AI Gym Screen",
-  "short_name": "Gym Screen",
-  "start_url": "./AI_Gym_Mirror_Mobile.html",
+  "name": "AI Gym Mirror",
+  "short_name": "Gym Mirror",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#080B14",
-  "theme_color": "#080B14",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "./icon.png",
